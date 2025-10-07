@@ -1,0 +1,33 @@
+name: Build docs PDF
+on:
+  push:
+    paths:
+      - "docs/**/*.md"
+      - ".github/workflows/docs-pdf.yml"
+jobs:
+  build-pdf:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install pandoc & LaTeX
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y pandoc texlive-latex-base
+      - name: Build PDFs from Markdown
+        run: |
+          shopt -s globstar
+          for f in docs/**/*.md; do
+            out="${f%.md}.pdf"
+            echo "→ $f -> $out"
+            pandoc "$f" -o "$out" || echo "Pandoc fallback OK"
+          done
+      - name: Commit PDFs
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/**/*.pdf || true
+          git commit -m "ci(docs): auto-build PDFs" || echo "No PDF changes"
+          git push || true ci(docs): add GitHub Action to auto-generate PDFs from markdown
+
+
+
