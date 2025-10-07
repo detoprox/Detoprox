@@ -69,7 +69,7 @@ Detoprox/
 │   └── BUILD.md                  # Guía técnica de compilación y pruebas
 ├── docs/                         # (Próximamente) Documentación oficial
 └── README.md                     # Este archivo.
-
+```
 ---
 
 ##⚙️ ¿Qué puede hacer Detoprox hoy?
