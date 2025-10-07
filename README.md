@@ -90,7 +90,7 @@ Los hooks `useDetoproxQuery` y `useDetoproxMutation` ya permiten consumir la API
 
 ✅ **CLI mínima funcional (`dpx`):**  
 Compilable desde `lang/tools/dpx/main.cpp` y usable con tres comandos base:
-
+```plaintext
 | Comando | Descripción |
 |----------|--------------|
 | `dpx serve` | Levanta un servidor HTTP de prueba y sirve la UI mínima. |
@@ -102,7 +102,7 @@ Compilable desde `lang/tools/dpx/main.cpp` y usable con tres comandos base:
 ./bin/dpx export-openapi
 ./bin/dpx gen-ts-client
 ./bin/dpx serve
-
+```
 Luego abre http://localhost:3000/static/index.html en el navegador.
 🧠 Filosofía técnica
 
@@ -117,7 +117,7 @@ Adapters: HTTP, DB, IA, automatización.
 Config: wiring y entorno.
 
 Este diseño mantiene la lógica del dominio pura, con adaptadores reemplazables y escalabilidad real para futuras integraciones (WASM, gRPC, IA, blockchain).
-
+```plaintext
 | Etapa    | Meta                                                              |
 | -------- | ----------------------------------------------------------------- |
 | **F2.8** | Búsqueda y orden generalizados en múltiples campos.               |
@@ -125,7 +125,7 @@ Este diseño mantiene la lógica del dominio pura, con adaptadores reemplazables
 | **F3**   | Comunidad open source: documentación, tutoriales y canal Discord. |
 | **F4**   | Integración con DTPX (moneda de utilidad y gobernanza).           |
 | **F5**   | Ecosistema total: Detoprox Hub, Academy y Chain.                  |
-
+```
 #🤝 Cómo aportar
 
 ##👨‍💻 Desarrolladores:
