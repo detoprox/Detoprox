@@ -1,0 +1,240 @@
+#pragma once
+#include <string>
+#include <sstream>
+#include <vector>
+#include <optional>
+#include <algorithm>
+
+//
+// Detoprox — OpenAPI 3.0 Exporter (header-only, C++17)
+//
+// Genera un YAML OpenAPI 3.0 a partir de un programa Detoprox “mínimo”.
+// NOTA: Incluye tipos ligeros (Program/Service/Route/Model/Field/Db) para
+// evitar dependencias con el AST real. Cuando el AST exista, puedes mapearlo
+// a estos tipos y llamar a OpenAPIExporter::fromProgram(...).
+//
+// Uso:
+//   dpx::Program prog = ... // llena services/routes/models/db
+//   auto r = dpx::OpenAPIExporter::fromProgram(prog, "Detoprox API", "0.1.0");
+//   std::string yaml = r.yaml;
+//
+// Cobertura (MVP):
+// - paths desde services/routes (GET/POST/PUT/DELETE)
+// - path param :id -> parameter integer requerido
+// - requestBody (POST/PUT) -> $ref al primer model del programa
+// - components.schemas desde models (tipos básicos)
+// - required en schemas leyendo anotación "required"
+// - query params en GET base: limit, offset, search, order (id ASC/DESC)
+//
+// FUTURO (no incluido aquí):
+// - Schemas por-route (200/4xx), enums reales, formats, multiple models por service,
+//   securitySchemes, servers, tags, examples, etc.
+//
+
+namespace dpx {
+
+// --------------------- Tipos ligeros (compat con AST futuro) -----------------
+struct Field {
+  std::string name;
+  std::string typeName;                 // "int", "text", "decimal(10,2)", "bool", etc.
+  std::vector<std::string> annots;      // {"required", "minlen(3)", ...}
+};
+
+struct Model {
+  std::string name;
+  std::vector<Field> fields;
+};
+
+struct Route {
+  std::string method; // "GET" | "POST" | "PUT" | "DELETE"
+  std::string path;   // "/","/:id", etc.
+};
+
+struct Service {
+  std::string basePath;           // p.ej. "/api/productos"
+  std::vector<Route> routes;
+};
+
+struct Db {
+  std::string url;                // p.ej. "sqlite://data.db"
+};
+
+struct Program {
+  std::vector<Model>   models;
+  std::vector<Service> services;
+  std::optional<Db>    db;
+};
+
+// --------------------- Utilidades ---------------------
+static inline std::string _trim(const std::string& s) {
+  size_t a = s.find_first_not_of(" \t\r\n");
+  size_t b = s.find_last_not_of(" \t\r\n");
+  if (a == std::string::npos) return "";
+  return s.substr(a, b - a + 1);
+}
+
+static inline std::string _mapType(const std::string& t){
+  std::string x = t;
+  std::transform(x.begin(), x.end(), x.begin(), ::tolower);
+  if (x == "int" || x == "integer") return "integer";
+  if (x == "bool" || x == "boolean") return "boolean";
+  if (x.rfind("decimal", 0) == 0 || x == "float" || x == "double" || x == "number") return "number";
+  // text, string, time, uuid -> string
+  return "string";
+}
+
+static inline bool _isRequired(const Field& f) {
+  if (f.name == "id") return false; // id autogenerado no es requerido
+  for (auto& a : f.annots) {
+    std::string k = _trim(a);
+    if (k == "required") return true;
+    if (k.rfind("required(", 0) == 0) return true;
+  }
+  return false;
+}
+
+static inline std::string _escape(const std::string& s) {
+  // YAML string simple entre comillas simples no necesita tanto escape,
+  // pero aquí mantenemos el string tal cual para rutas y títulos.
+  return s;
+}
+
+static inline std::string _toMethod(const std::string& m) {
+  if (m == "GET")    return "get";
+  if (m == "POST")   return "post";
+  if (m == "PUT")    return "put";
+  if (m == "DELETE") return "delete";
+  return "get";
+}
+
+static inline std::string _pathJoin(const std::string& base, const std::string& p) {
+  if (base.empty()) return p;
+  if (p.empty())    return base;
+  if (base == "/" && !p.empty()) return p;
+  if (p == "/") return base;
+  if (base.back() == '/' && p.front() == '/') return base.substr(0, base.size()-1) + p;
+  if (base.back() != '/' && p.front() != '/') return base + "/" + p;
+  return base + p;
+}
+
+static inline bool _hasIdParam(const std::string& path) {
+  return path.find(":id") != std::string::npos;
+}
+
+struct OpenAPIResult { std::string yaml; };
+
+// --------------------- Exportador ---------------------
+class OpenAPIExporter {
+public:
+  static OpenAPIResult fromProgram(const Program& prog,
+                                   const std::string& title   = "Detoprox API",
+                                   const std::string& version = "0.1.0") {
+    std::ostringstream y;
+
+    // Encabezado
+    y << "openapi: 3.0.3\n";
+    y << "info:\n";
+    y << "  title: "   << _escape(title)   << "\n";
+    y << "  version: " << _escape(version) << "\n";
+
+    // paths
+    y << "paths:\n";
+    for (const auto& s : prog.services) {
+      for (const auto& r : s.routes) {
+        const std::string full = _pathJoin(s.basePath, r.path);
+        const std::string meth = _toMethod(r.method);
+        const bool hasId = _hasIdParam(full);
+        y << "  '" << _escape(full) << "':\n";
+        y << "    " << meth << ":\n";
+        y << "      summary: stub generated by Detoprox\n";
+
+        // Query params para GET base "/"
+        const std::string baseSlash = _pathJoin(s.basePath, "/");
+        bool wroteParams = false;
+        if (meth == "get" && full == baseSlash) {
+          y << "      parameters:\n";
+          y << "        - in: query\n";
+          y << "          name: limit\n";
+          y << "          schema: { type: integer, minimum: 1, maximum: 200 }\n";
+          y << "          description: Max items (default 50)\n";
+          y << "        - in: query\n";
+          y << "          name: offset\n";
+          y << "          schema: { type: integer, minimum: 0 }\n";
+          y << "        - in: query\n";
+          y << "          name: search\n";
+          y << "          schema: { type: string }\n";
+          y << "          description: Substring match (MVP)\n";
+          y << "        - in: query\n";
+          y << "          name: order\n";
+          y << "          schema: { type: string, enum: [\"id DESC\",\"id ASC\"] }\n";
+          wroteParams = true;
+        }
+
+        // Path param :id
+        if (hasId) {
+          if (!wroteParams) y << "      parameters:\n";
+          y << "        - in: path\n";
+          y << "          name: id\n";
+          y << "          required: true\n";
+          y << "          schema: { type: integer }\n";
+        }
+
+        // requestBody para POST/PUT -> primer model
+        if ((meth == "post" || meth == "put") && !prog.models.empty()) {
+          const auto& m = prog.models.front();
+          y << "      requestBody:\n";
+          y << "        required: true\n";
+          y << "        content:\n";
+          y << "          application/json:\n";
+          y << "            schema:\n";
+          y << "              $ref: '#/components/schemas/" << m.name << "'\n";
+        }
+
+        // Respuesta 200 genérica (objeto o array del model principal)
+        y << "      responses:\n";
+        y << "        '200':\n";
+        y << "          description: OK\n";
+        y << "          content:\n";
+        y << "            application/json:\n";
+        y << "              schema:\n";
+        if (!prog.models.empty()) {
+          const auto& m = prog.models.front();
+          y << "                oneOf:\n";
+          y << "                  - $ref: '#/components/schemas/" << m.name << "'\n";
+          y << "                  - type: array\n";
+          y << "                    items:\n";
+          y << "                      $ref: '#/components/schemas/" << m.name << "'\n";
+        } else {
+          y << "                oneOf:\n";
+          y << "                  - type: object\n";
+          y << "                  - type: array\n";
+        }
+      }
+    }
+
+    // components.schemas desde models
+    if (!prog.models.empty()) {
+      y << "components:\n";
+      y << "  schemas:\n";
+      for (const auto& m : prog.models) {
+        y << "    " << m.name << ":\n";
+        y << "      type: object\n";
+        y << "      properties:\n";
+        std::vector<std::string> req;
+        for (const auto& f : m.fields) {
+          y << "        " << f.name << ":\n";
+          y << "          type: " << _mapType(f.typeName) << "\n";
+          if (_isRequired(f)) req.push_back(f.name);
+        }
+        if (!req.empty()) {
+          y << "      required:\n";
+          for (auto& n : req) y << "        - " << n << "\n";
+        }
+      }
+    }
+
+    return { y.str() };
+  }
+};
+
+} // namespace dpx
