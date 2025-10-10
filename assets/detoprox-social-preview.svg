@@ -1,0 +1,22 @@
+<svg width="1280" height="640" viewBox="0 0 1280 640" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1280" height="640" fill="#0A2A66"/>
+  <!-- Franja roja superior mínima -->
+  <rect width="1280" height="16" fill="#E52626"/>
+  
+  <!-- Monograma D grande a la izquierda -->
+  <g transform="translate(120,120) scale(0.9)">
+    <path fill="#FFFFFF" fill-rule="evenodd"
+          d="M0 0h360c220 0 320 150 320 360S580 720 360 720H0V0Zm128 144v432h192c132 0 192-88 192-216S452 144 320 144H128Z"/>
+    <path d="M220 370h250l-70 142" stroke="#1EA7FF" stroke-width="24" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+    <circle cx="188" cy="370" r="24" fill="#E52626"/>
+    <circle cx="472" cy="370" r="24" fill="#1EA7FF"/>
+    <circle cx="402" cy="512" r="24" fill="#1EA7FF"/>
+  </g>
+  
+  <!-- Wordmark -->
+  <text x="620" y="300" fill="#FFFFFF" font-size="88" font-family="Inter, Segoe UI, Arial, sans-serif" font-weight="700">Detoprox</text>
+  <text x="620" y="360" fill="#D9E2F3" font-size="34" font-family="Inter, Segoe UI, Arial, sans-serif" opacity="0.92">where ideas become systems</text>
+  
+  <!-- Línea acento -->
+  <rect x="620" y="380" width="420" height="4" fill="#1EA7FF" opacity="0.85"/>
+</svg>

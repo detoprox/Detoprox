@@ -1,0 +1,22 @@
+<svg width="1024" height="1024" viewBox="0 0 1024 1024" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fondo azul (seguro para recorte circular) -->
+  <defs>
+    <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+      <stop offset="0" stop-color="#0A2A66"/>
+      <stop offset="1" stop-color="#0B2F72"/>
+    </linearGradient>
+  </defs>
+  <rect width="1024" height="1024" fill="url(#g)" rx="180" ry="180"/>
+  
+  <!-- Monograma D (estilo sólido) -->
+  <path fill="#FFFFFF" fill-rule="evenodd"
+        d="M256 224h288c176 0 256 120 256 288s-80 288-256 288H256V224zm128 128v320h160c110 0 160-74 160-160s-50-160-160-160H384z"/>
+  
+  <!-- Nodos y enlaces (celeste + rojo) -->
+  <!-- Línea principal -->
+  <path d="M445 520h220l-58 120" stroke="#1EA7FF" stroke-width="28" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+  <!-- Nodos -->
+  <circle cx="410" cy="520" r="28" fill="#E52626"/>
+  <circle cx="665" cy="520" r="28" fill="#1EA7FF"/>
+  <circle cx="607" cy="640" r="28" fill="#1EA7FF"/>
+</svg>

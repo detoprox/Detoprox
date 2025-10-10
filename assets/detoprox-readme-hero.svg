@@ -1,0 +1,15 @@
+svg width=1200 height=300 viewBox=0 0 1200 300 xmlns=httpwww.w3.org2000svg
+  !-- Transparente para cualquier fondo de GitHub --
+  !-- Logo compacto --
+  g transform=translate(40,30) scale(0.33)
+    path fill=#0A2A66 d=M0 0h360c220 0 320 150 320 360S580 720 360 720H0V0Z
+    path fill=#FFFFFF d=M128 144v432h192c132 0 192-88 192-216S452 144 320 144H128Z
+    path d=M220 370h250l-70 142 stroke=#1EA7FF stroke-width=24 stroke-linecap=round stroke-linejoin=round fill=none
+    circle cx=188 cy=370 r=24 fill=#E52626
+    circle cx=472 cy=370 r=24 fill=#1EA7FF
+    circle cx=402 cy=512 r=24 fill=#1EA7FF
+  g
+  text x=300 y=130 fill=#0A2A66 font-size=72 font-family=Inter, Segoe UI, Arial, sans-serif font-weight=800Detoproxtext
+  text x=300 y=180 fill=#2A3E6E font-size=26 font-family=Inter, Segoe UI, Arial, sans-serifwhere ideas become systemstext
+  rect x=300 y=195 width=440 height=3 fill=#1EA7FF opacity=0.9
+svg
